@@ -1,0 +1,23 @@
+{
+  "name": "scraping",
+  "version": "1.0.0",
+  "description": "scraping all the information",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "latest",
+    "eslint-plugin-import": "^2.7.0",
+    "express": "latest",
+    "json2csv": "^3.11.0",
+    "lodash": "latest",
+    "request": "latest"
+  },
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "eslint-config-airbnb-base": "^11.3.1"
+  }
+}
