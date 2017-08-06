@@ -12,19 +12,55 @@ const _ = require('lodash');
 const masterUrl = 'http://www.champ-sys.com.au/custom';
 
 const childUrl = [];
+const trimUrltoProduct = (tempUrl) => {
+  const firstPos = tempUrl.lastIndexOf('/') + 1;
+  const lastPos = tempUrl.lastIndexOf('.');
+  return tempUrl.slice(firstPos, lastPos);
+}
+function getSingleProductCallBack(tempUrl) {
+  request('http://www.champ-sys.com.au/custom/tech-lite-polo-shirt-30638.html', (error, response, html) => {
+    const json = { };
+    if (!error) {
+      const $ = cheerio.load(html);
+      json.productUrl = tempUrl;
+      json.uniqueName = trimUrltoProduct(tempUrl);
+      json.productName = $('.product-name > h1').html();
+      json.description = $('.product-shop > .description').html();
+      /*
+      $('.slider > li > a').each((i, el) => {
+        json.imageUrls[i] = $(el).attr('href');
+      });
+      */
 
-const getAllChildUrl = (url) => {
+    }
+    console.log(json2csv(json));
+    //return json;
+  });
+}
+
+function recursivegetChildUrl(url) {
   request(url, (error, response, html) => {
-    if(!error) {
+    // first get all the url
+    console.log('now scrape', url);
+    if (!error) {
       const $ = cheerio.load(html);
       $('.products-grid > li > a').each((i, el) => {
         childUrl.push($(el).attr('href'));
       });
+      const nextUrl = $('.i-next').attr('href');
+      if (nextUrl !== undefined) {
+        recursivegetChildUrl(nextUrl);
+      } else {
+        console.log('Start the single product scraping');
+        _.each(childUrl, (value) => {
+          getSingleProductCallBack(value);
+        });
+      }
+    } else {
+      console.log(error);
     }
-    console.log(childUrl);
   });
 }
-
 
 function translateToCsv(json, fileName) {
   const newJson = {
@@ -46,34 +82,14 @@ function translateToCsvImage(json) {
   });
 }
 
-function getSingleProductCallBack(tempUrl) {
-  request(tempUrl, (error, response, html) => {
-    const json = { productUrl: '', productName: '', description: '', imageUrls: [], price: ''};
-    if (!error) {
-      const $ = cheerio.load(html);
-      json.productUrl = tempUrl;
-      json.productName = $('.product-name > h1').text();
-      json.description = $('.product-shop > .description').text();
-      /*
-      $('.slider > li > a').each((i, el) => {
-        json.imageUrls[i] = $(el).attr('href');
-      });
-      */
-
-    }
-    console.log(json);
-    return json;
-  });
-}
-
 
 console.log('start scraping');
 
 //prepare the tree
-getAllChildUrl(masterUrl);
+//recursivegetChildUrl(masterUrl);
 //for the tree, scrape
-
 // and save to file
+getSingleProductCallBack('http://www.champ-sys.com.au/custom/tech-lite-polo-shirt-30638.html');
 
 
 
