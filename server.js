@@ -91,7 +91,4 @@ console.log('start scraping');
 // and save to file
 getSingleProductCallBack('http://www.champ-sys.com.au/custom/tech-lite-polo-shirt-30638.html');
 
-
-
-
 // exports = module.exports = app;
