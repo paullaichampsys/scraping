@@ -6,9 +6,9 @@ const cheerio = require('cheerio');
 //const productFileName = 'shopReadyToWear.csv';
 //const imageFileName = 'shopReadyToWearImage.csv';
 //const masterUrl = 'http://www.champ-sys.com.au/retail';
-const productFileName = 'assets/custom_rugby/accessories.csv';
-const imageFileName = 'assets/custom_rugby/accessoriesImage.csv';
-const masterUrl = 'http://www.champ-sys.com.au/custom/rugby/accessories';
+const productFileName = 'assets/HK/custom_running/run-accessories.csv';
+const imageFileName = 'assets/HK/custom_running/run-accessoriesImage.csv';
+const masterUrl = 'http://www.champ-sys.com.hk/custom/running/run-accessories';
 
 const trimUrltoProduct = (tempUrl) => {
   const firstPos = tempUrl.lastIndexOf('/') + 1;
