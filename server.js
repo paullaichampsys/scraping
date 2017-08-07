@@ -1,40 +1,75 @@
-// const express = require('express');
 const fs = require('fs');
 const request = require('request');
 const cheerio = require('cheerio');
-const json2csv = require('json2csv');
-const _ = require('lodash');
-// const app = express();
 
 // All the web scraping magic will happen here
-//const url = 'http://www.champ-sys.com.au/custom/tech-long-sleeve-jersey.html';
+//const productFileName = 'shopReadyToWear.csv';
+//const imageFileName = 'shopReadyToWearImage.csv';
+//const masterUrl = 'http://www.champ-sys.com.au/retail';
+const productFileName = 'assets/custom_rugby/accessories.csv';
+const imageFileName = 'assets/custom_rugby/accessoriesImage.csv';
+const masterUrl = 'http://www.champ-sys.com.au/custom/rugby/accessories';
 
-const masterUrl = 'http://www.champ-sys.com.au/custom';
-
-const childUrl = [];
 const trimUrltoProduct = (tempUrl) => {
   const firstPos = tempUrl.lastIndexOf('/') + 1;
   const lastPos = tempUrl.lastIndexOf('.');
   return tempUrl.slice(firstPos, lastPos);
 }
+
+// fail control
+let imageErrCounter = 0;
+let requestErrCounter = 0;
+let itemCounter = 0;
+
+const trimExtraNextLine = (str) => {
+  let tempStr = str.replace(/\\n/g, '');
+  tempStr = tempStr.replace(/\n/g, '');
+  tempStr = tempStr.replace('\\n', '');
+  tempStr = tempStr.replace(/["]/g, "'");
+  tempStr = tempStr.replace('  ', ' ');
+  return tempStr.trim();
+}
+
+const writeProductCsv = function _writeToFileCsv(json) {
+  const str = `${json.productName},${json.productUrl},${json.uniqueName},"${json.description}",${json.price}\n`;
+  fs.appendFile(productFileName, str);
+}
+
+const writeProductImgCsv = function _writeProductImgCsv(json) {
+  let str = '';
+  json.imageUrls.forEach((currentValue) => {
+    str = `${str}${json.uniqueName},${currentValue}\n`;
+  });
+  fs.appendFile(imageFileName, str);
+}
+
 function getSingleProductCallBack(tempUrl) {
-  request('http://www.champ-sys.com.au/custom/tech-lite-polo-shirt-30638.html', (error, response, html) => {
+  request(tempUrl, (error, response, html) => {
     const json = { };
     if (!error) {
       const $ = cheerio.load(html);
       json.productUrl = tempUrl;
       json.uniqueName = trimUrltoProduct(tempUrl);
       json.productName = $('.product-name > h1').html();
-      json.description = $('.product-shop > .description').html();
-      /*
-      $('.slider > li > a').each((i, el) => {
-        json.imageUrls[i] = $(el).attr('href');
-      });
-      */
-
+      json.description = trimExtraNextLine($('div.product-shop > div.description > div.std').html());
+      json.price = $('.product-shop > .price-box > .regular-price > span.price').text();
+      json.imageUrls = [];
+      try {
+        $('div.container-slider > ul.slider > li > a').each((i, el) => {
+          json.imageUrls.push($(el).attr('href'));
+        });
+      } catch (imgerror) {
+        console.log('image Error');
+        imageErrCounter += 1;
+      }
+      itemCounter += 1;
+      console.log('success', itemCounter, json.productUrl);
+      writeProductCsv(json);
+      writeProductImgCsv(json);
+    } else {
+      console.log('error', error);
+      requestErrCounter += 1;
     }
-    console.log(json2csv(json));
-    //return json;
   });
 }
 
@@ -45,50 +80,24 @@ function recursivegetChildUrl(url) {
     if (!error) {
       const $ = cheerio.load(html);
       $('.products-grid > li > a').each((i, el) => {
-        childUrl.push($(el).attr('href'));
+        const href = $(el).attr('href');
+        // Do the scraping here
+        getSingleProductCallBack(href);
       });
       const nextUrl = $('.i-next').attr('href');
       if (nextUrl !== undefined) {
         recursivegetChildUrl(nextUrl);
-      } else {
-        console.log('Start the single product scraping');
-        _.each(childUrl, (value) => {
-          getSingleProductCallBack(value);
-        });
       }
     } else {
       console.log(error);
+      requestErrCounter += 1;
     }
   });
+  console.log('Image error: ', imageErrCounter);
+  console.log('Request Error: ', requestErrCounter);
 }
-
-function translateToCsv(json, fileName) {
-  const newJson = {
-    productUrl: json.productUrl,
-    productName: json.productName,
-    description: json.description,
-    price: json.price,
-  };
-  const csv = json2csv(newJson);
-  fs.writeFile(fileName, csv, (err) => {
-    if (err) throw err;
-    console.log('file saved');
-  });
-}
-
-function translateToCsvImage(json) {
-  return _.each(json.imageUrls, (value) => {
-    return json2csv({ productUrl: json.productUrl, imageUrl: value });
-  });
-}
-
 
 console.log('start scraping');
 
-//prepare the tree
-//recursivegetChildUrl(masterUrl);
-//for the tree, scrape
-// and save to file
-getSingleProductCallBack('http://www.champ-sys.com.au/custom/tech-lite-polo-shirt-30638.html');
-
-// exports = module.exports = app;
+//start the scraping
+recursivegetChildUrl(masterUrl);

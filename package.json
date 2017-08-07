@@ -11,8 +11,6 @@
   "dependencies": {
     "cheerio": "latest",
     "eslint-plugin-import": "^2.7.0",
-    "express": "latest",
-    "json2csv": "^3.11.0",
     "lodash": "latest",
     "request": "latest"
   },
