@@ -6,9 +6,9 @@ const cheerio = require('cheerio');
 //const productFileName = 'shopReadyToWear.csv';
 //const imageFileName = 'shopReadyToWearImage.csv';
 //const masterUrl = 'http://www.champ-sys.com.au/retail';
-const productFileName = 'assets/HK/custom_running/run-accessories.csv';
-const imageFileName = 'assets/HK/custom_running/run-accessoriesImage.csv';
-const masterUrl = 'http://www.champ-sys.com.hk/custom/running/run-accessories';
+const productFileName = 'assets/NZ/rugby/accessories.csv';
+const imageFileName = 'assets/NZ/rugby/accessoriesImage.csv';
+const masterUrl = 'http://www.champ-sys.co.nz/custom/rugby/accessories';
 
 const trimUrltoProduct = (tempUrl) => {
   const firstPos = tempUrl.lastIndexOf('/') + 1;
@@ -31,7 +31,7 @@ const trimExtraNextLine = (str) => {
 }
 
 const writeProductCsv = function _writeToFileCsv(json) {
-  const str = `${json.productName},${json.productUrl},${json.uniqueName},"${json.description}",${json.price}\n`;
+  const str = `"${json.productName}",${json.productUrl},${json.uniqueName},"${json.description}",${json.price}\n`;
   fs.appendFile(productFileName, str);
 }
 
