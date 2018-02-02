@@ -6,8 +6,8 @@ const cheerio = require('cheerio');
 //const productFileName = 'shopReadyToWear.csv';
 //const imageFileName = 'shopReadyToWearImage.csv';
 //const masterUrl = 'http://www.champ-sys.com.au/retail';
-const productFileName = 'usa.csv';
-const imageFileName = 'usaImage.csv';
+const productFileName = 'usa-2.csv';
+const imageFileName = 'usaImage-2.csv';
 const masterUrl = 'http://champ-sys.com/retail';
 
 const trimUrltoProduct = (tempUrl) => {
@@ -34,7 +34,7 @@ const trimExtraNextLine = (str) => {
 }
 
 const writeProductCsv = function _writeToFileCsv(json) {
-  const str = `"${json.productName}",${json.productUrl},${json.uniqueName},"${json.description}",${json.price}\n`;
+  const str = `"${json.productName}",${json.productUrl},${json.uniqueName},"${json.description}","${json.description2}",${json.price}\n`;
   fs.appendFile(productFileName, str);
 }
 
@@ -54,7 +54,8 @@ function getSingleProductCallBack(tempUrl) {
       json.productUrl = tempUrl;
       json.uniqueName = trimUrltoProduct(tempUrl);
       json.productName = $('.product-name > h1').html();
-      json.description = trimExtraNextLine($('div.product-shop > div.description > div.std').html());
+      json.description = trimExtraNextLine($('div.product-collateral > div.box-collateral.box-description > div.box-collateral-content > div.std').html());
+      json.description2 = trimExtraNextLine($('div.product-shop > div.short-description > div.std').html());
       json.price = $('.product-shop > .price-box > .regular-price > span.price').text();
       json.imageUrls = [];
       try {
